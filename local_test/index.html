@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Interface</title>
+    <style>
+        /* General styles */
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            position: relative; /* Allows positioning of IP address box */
+        }
+        .container {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 1200px;
+            padding: 20px;
+        }
+        #stream-container {
+            width: 70%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        #stream {
+            max-width: 100%;
+            max-height: 100%;
+            transform: scaleY(-1);
+        }
+        .controls {
+            width: 30%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 20px;
+            padding: 20px;
+        }
+        .switch-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        /* Updated Button Styles */
+        .button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            text-transform: uppercase;
+            width: 100%;
+        }
+        .button-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .button-success {
+            background-color: #28a745;
+            color: white;
+        }
+        .button-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        .button-warning {
+            background-color: #ffc107;
+            color: white;
+        }
+
+        /* Change colors on active (pressed) state */
+        .button:active {
+            transform: scale(0.98); /* Slight press effect */
+        }
+        .button-danger:active {
+            background-color: #c82333;
+        }
+        .button-success:active {
+            background-color: #218838;
+        }
+        .button-primary:active {
+            background-color: #0056b3;
+        }
+        .button-warning:active {
+            background-color: #e0a800;
+        }
+
+        /* Arrow button styles */
+        .arrow-buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .arrow-button {
+            font-size: 24px;
+            width: 50px;
+            height: 50px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            text-align: center;
+            line-height: 46px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            user-select: none;
+        }
+        .arrow-button:active {
+            background-color: #ccc;
+            color: #fff;
+        }
+        .arrow-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        /* Styles for the switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+        input:focus + .slider {
+            box-shadow: 0 0 1px #2196F3;
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        /* IP address box */
+        .ip-box {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background-color: #333;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Interface 0.3</h1>
+    <div class="container">
+        <div id="stream-container">
+            <img id="stream" src="stream.mjpg" alt="Stream Image">
+        </div>
+        <div class="controls">
+            <div class="switch-container">
+                <label class="switch">
+                    <input id="toggleSwitch1" type="checkbox" onclick="toggleSwitch1()">
+                    <span class="slider round"></span>
+                </label>
+                <label class="switch">
+                    <input id="toggleSwitch2" type="checkbox" onclick="toggleSwitch2()">
+                    <span class="slider round"></span>
+                </label>
+                <label class="switch">
+                    <input id="toggleSwitch3" type="checkbox" onclick="toggleSwitch3()">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="button-container">
+                <button id="buttonRed" class="button button-danger" onclick="buttonPressed1()">Red</button>
+                <button id="buttonGreen" class="button button-success" onclick="buttonPressed2()">Green</button>
+                <button id="buttonBlue" class="button button-primary" onclick="buttonPressed3()">Blue</button>
+                <button id="buttonYellow" class="button button-warning" onclick="buttonPressed4()">Yellow</button>
+            </div>
+            <div class="arrow-buttons">
+                <div class="arrow-row">
+                    <div class="arrow-button" id="upButton">&#8593;</div>
+                </div>
+                <div class="arrow-row">
+                    <div class="arrow-button" id="leftButton">&#8592;</div>
+                    <div class="arrow-button" id="downButton">&#8595;</div>
+                    <div class="arrow-button" id="rightButton">&#8594;</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- IP address box -->
+    <div class="ip-box" id="ipAddress">carogna.local:8000</div>
+
+<script>
+    // **State Tracking Variables**
+    const keysPressed = {
+        ArrowUp: false,
+        ArrowDown: false,
+        ArrowLeft: false,
+        ArrowRight: false
+    };
+
+    // **Function to Send Fetch Requests**
+    function sendCommand(command) {
+        fetch(command)
+            .then(response => {
+                if (response.ok) {
+                    console.log(`Command ${command} sent successfully.`);
+                } else {
+                    console.error(`Failed to send command: ${command}`);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+    // **Handle Keydown Events**
+    document.addEventListener('keydown', function(event) {
+        if (!keysPressed[event.key]) { // Only trigger on first press
+            keysPressed[event.key] = true;
+
+            switch(event.key) {
+                case 'ArrowUp':
+                    accelerate();
+                    break;
+                case 'ArrowDown':
+                    brake();
+                    break;
+                case 'ArrowLeft':
+                    steerLeft();
+                    break;
+                case 'ArrowRight':
+                    steerRight();
+                    break;
+            }
+        }
+
+        // Switches
+        if (event.key === '1') {
+            document.getElementById('toggleSwitch1').click();
+            //toggleSwitch1(); // Only call the function directly, avoid click()
+        } else if (event.key === '2') {
+            document.getElementById('toggleSwitch2').click();
+            //toggleSwitch2(); // Only call the function directly, avoid click()
+        } else if (event.key === '3') {
+            document.getElementById('toggleSwitch3').click();
+            //toggleSwitch3(); // Only call the function directly, avoid click()
+        }
+
+        // Handle buttons using the correct IDs
+        if (event.key === 'q') {
+            buttonPressed1(); // Calls red button function
+        } else if (event.key === 'w') {
+            buttonPressed2(); // Calls green button function
+        } else if (event.key === 'e') {
+            buttonPressed3(); // Calls blue button function
+        } else if (event.key === 'r') {
+            buttonPressed4(); // Calls yellow button function
+        }
+    });
+
+    // **Handle Keyup Events**
+    document.addEventListener('keyup', function(event) {
+        if (keysPressed[event.key]) { // Only send if was pressed
+            keysPressed[event.key] = false;
+
+            switch(event.key) {
+                case 'ArrowUp':
+                    sendCommand('/stop_accelerating');
+                    break;
+                case 'ArrowDown':
+                    sendCommand('/release_brake');
+                    break;
+                case 'ArrowLeft':
+                case 'ArrowRight':
+                    sendCommand('/straighten');
+                    break;
+            }
+        }
+    });
+
+    // **Mouse Events for On-Screen Arrow Buttons**
+    function addMouseEvents(buttonId, pressCommand, releaseCommand) {
+        const button = document.getElementById(buttonId);
+
+        button.addEventListener('mousedown', () => {
+            sendCommand(pressCommand);
+        });
+
+        button.addEventListener('mouseup', () => {
+            sendCommand(releaseCommand);
+        });
+
+        button.addEventListener('mouseleave', () => {
+            sendCommand(releaseCommand);
+        });
+
+        // For touch devices
+        button.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            sendCommand(pressCommand);
+        });
+
+        button.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            sendCommand(releaseCommand);
+        });
+    }
+
+    addMouseEvents('upButton', '/accelerate', '/stop_accelerating');
+    addMouseEvents('downButton', '/brake', '/release_brake');
+    addMouseEvents('leftButton', '/steer_left', '/straighten');
+    addMouseEvents('rightButton', '/steer_right', '/straighten');
+
+    // **Function Implementations for Real-Time Control**
+    function accelerate() {
+        sendCommand('/accelerate');
+    }
+
+    function brake() {
+        sendCommand('/brake');
+    }
+
+    function steerLeft() {
+        sendCommand('/steer_left');
+    }
+
+    function steerRight() {
+        sendCommand('/steer_right');
+    }
+
+
+    // **Function to Toggle Switch 1**
+    function toggleSwitch1() {
+        fetch('/toggle_switch_1')
+            .then(response => {
+                if (response.ok) {
+                    console.log('Switch 1 toggled!');
+                } else {
+                    console.error('Failed to toggle Switch 1');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+    // **Function to Toggle Switch 2**
+    function toggleSwitch2() {
+        fetch('/toggle_switch_2')
+            .then(response => {
+                if (response.ok) {
+                    console.log('Switch 2 toggled!');
+                } else {
+                    console.error('Failed to toggle Switch 2');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+    // **Function to Toggle Switch 3**
+    function toggleSwitch3() {
+        fetch('/toggle_switch_3')
+            .then(response => {
+                if (response.ok) {
+                    console.log('Switch 3 toggled!');
+                } else {
+                    console.error('Failed to toggle Switch 3');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+
+    // Button Press Functions
+    function buttonPressed1() {
+        sendCommand('/button_red');
+    }
+
+    function buttonPressed2() {
+        sendCommand('/button_green');
+    }
+
+    function buttonPressed3() {
+        sendCommand('/button_blue');
+    }
+
+    function buttonPressed4() {
+        sendCommand('/button_yellow');
+    }
+</script>
+</body>
+</html>
