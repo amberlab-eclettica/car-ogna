@@ -178,6 +178,14 @@
         input:checked + .slider:before {
             transform: translateX(26px);
         }
+        
+        /* Tachometer */
+        #tachometer {
+            width: 100%; /* Adjust as needed */
+            height: 100%; /* Adjust as needed */
+            margin-top: 20px; 
+            margin-bottom: -120px; /* Space between tachometer and arrow buttons */
+        }
 
         /* IP address box */
         .ip-box {
@@ -190,10 +198,51 @@
             border-radius: 5px;
             font-size: 14px;
         }
+
+        .video-list {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background-color: #333;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            max-width: 200px;
+            overflow-y: auto;
+            max-height: 200px;
+        }
+        .video-list h3 {
+            margin: 0 0 10px;
+            font-size: 16px;
+        }
+        .video-list a {
+            color: #2196F3;
+            text-decoration: none;
+            display: block;
+            margin: 5px 0;
+        }
+        .video-list a:hover {
+            text-decoration: underline;
+        }
+        .video-list {
+            cursor: pointer; /* Changes the cursor to a pointer */
+        }
+
+        #videosContainer {
+            overflow: hidden; /* Prevents overflow */
+            max-height: 0; /* Start hidden */
+            transition: max-height 0.5s ease-out; /* Smooth transition for expanding */
+        }
+
+        #videosContainer.show {
+            max-height: 500px; /* Set a maximum height for expanded state */
+        }
+
     </style>
 </head>
 <body>
-    <h1>Interface 0.3</h1>
+    <h1>Interface 0.5</h1>
     <div class="container">
         <div id="stream-container">
             <img id="stream" src="stream.mjpg" alt="Stream Image">
@@ -214,10 +263,13 @@
                 </label>
             </div>
             <div class="button-container">
-                <button id="buttonRed" class="button button-danger" onclick="buttonPressed1()">Red</button>
+                <button id="buttonRed" class="button button-danger" onclick="buttonPressed1()">Caveve</button>
                 <button id="buttonGreen" class="button button-success" onclick="buttonPressed2()">Green</button>
-                <button id="buttonBlue" class="button button-primary" onclick="buttonPressed3()">Blue</button>
-                <button id="buttonYellow" class="button button-warning" onclick="buttonPressed4()">Yellow</button>
+                <button id="buttonBlue" class="button button-primary" onclick="buttonPressed3()">Start recording</button>
+                <button id="buttonYellow" class="button button-warning" onclick="buttonPressed4()">Stop recording</button>
+            </div>
+            <div id="overlay">
+                <canvas id="tachometer" width="250" height="250"></canvas>
             </div>
             <div class="arrow-buttons">
                 <div class="arrow-row">
@@ -233,7 +285,15 @@
     </div>
 
     <!-- IP address box -->
-    <div class="ip-box" id="ipAddress">carogna.local:8000</div>
+    <div class="ip-box" id="ipAddress">carogna2.local:8000</div>
+
+    <div class="video-list" id="videos">
+        <h3>Recorded Videos</h3>
+        <div id="videosContainer" class="hidden">
+            <!-- Video links will be added here dynamically -->
+        </div>
+    </div>
+
 
 <script>
     // **State Tracking Variables**
@@ -280,6 +340,13 @@
             }
         }
 
+        document.addEventListener('keydown', function(event) {
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+                event.preventDefault();
+            }
+            // rest of your logic
+        });
+
         // Switches
         if (event.key === '1') {
             document.getElementById('toggleSwitch1').click();
@@ -323,6 +390,13 @@
             }
         }
     });
+
+    // Show the videos
+    document.getElementById('videos').addEventListener('click', function() {
+        const container = document.getElementById('videosContainer');
+        container.classList.toggle('show'); // Toggle the show class
+    });
+
 
     // **Mouse Events for On-Screen Arrow Buttons**
     function addMouseEvents(buttonId, pressCommand, releaseCommand) {
@@ -437,6 +511,135 @@
     function buttonPressed4() {
         sendCommand('/button_yellow');
     }
+
+    // Fetch and display the list of recorded videos
+    function fetchVideos() {
+        fetch('/videos')
+        .then(response => response.json())
+        .then(data => {
+            const videoContainer = document.getElementById('videosContainer');
+            videoContainer.innerHTML = '';  // Clear previous list
+
+            if (data.videos.length === 0) {
+                videoContainer.innerHTML = '<p>No videos available</p>';
+            } else {
+                data.videos.forEach(video => {
+                    const videoLink = document.createElement('a');
+                    videoLink.href = `/videos/${video}`;  // Adjust this line
+                    videoLink.textContent = video;
+                    videoLink.download = video;
+                    videoContainer.appendChild(videoLink);
+                });
+            }
+        })
+        .catch(error => console.error('Error fetching videos:', error));
+    }
+
+    // Call the function when the page loads
+    window.onload = fetchVideos;
+    
+    // Tachometer
+    const canvas = document.getElementById('tachometer');
+    const ctx = canvas.getContext('2d');
+
+    // Set canvas size directly to match the visible size (CSS size)
+    const width = canvas.offsetWidth;   // Get the width set by CSS
+    const height = canvas.offsetHeight; // Get the height set by CSS
+
+    canvas.width = width;   // Set the canvas width based on the CSS size
+    canvas.height = height; // Set the canvas height based on the CSS size
+
+    const centerX = width / 2;
+    const centerY = height / 2;
+
+    // Adjust radius relative to the new size
+    const radius = Math.min(width, height) / 2 - 20;
+
+    function drawTachometer(speed, steering) {
+        // Clear the canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw speed arc
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, Math.PI, 2 * Math.PI, false);
+        ctx.lineWidth = radius / 5; // Adjust line width proportionally
+        ctx.strokeStyle = '#ddd';
+        ctx.stroke();
+
+        // Draw numbers along the speed arc
+        ctx.font = `${radius / 5}px Arial`; // Adjust font size proportionally
+        ctx.fillStyle = '#000';
+        for (let i = 0; i <= 100; i += 20) {
+            const angle = Math.PI + (Math.PI * (i / 100));
+            const x = centerX + (radius - 25) * Math.cos(angle);
+            const y = centerY + (radius - 25) * Math.sin(angle);
+            ctx.fillText(i.toString(), x - 10, y + 5);
+        }
+
+        // Draw speed needle
+        const speedAngle = Math.PI + (Math.PI * (speed / 100));
+        const needleEndX = centerX + radius * Math.cos(speedAngle);
+        const needleEndY = centerY + radius * Math.sin(speedAngle);
+
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(needleEndX, needleEndY);
+        ctx.lineWidth = radius / 15; // Adjust line width proportionally
+        ctx.strokeStyle = '#ff5733';
+        ctx.stroke();
+
+        // Draw rounded end for speed needle
+        const roundedEndRadius = radius / 30;  // Adjust needle end size proportionally
+        ctx.beginPath();
+        ctx.arc(needleEndX, needleEndY, roundedEndRadius, 0, 2 * Math.PI);
+        ctx.fillStyle = '#ff5733';
+        ctx.fill();
+
+        // Draw the circle at the origin of the speed line
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius / 10, 0, 2 * Math.PI);  // Adjust size proportionally
+        ctx.fillStyle = '#ff5733';
+        ctx.fill();
+
+        // Draw steering arc
+        const steeringRadius = radius - 70;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, steeringRadius, Math.PI, 2 * Math.PI, false);
+        ctx.lineWidth = radius / 10; // Adjust line width proportionally
+        ctx.strokeStyle = '#aaa';
+        ctx.stroke();
+
+        // Draw steering indicator
+        const steeringAngle = (Math.PI / 2) + ((steering / 180) * Math.PI);
+        const steeringX = centerX + steeringRadius * Math.cos(steeringAngle);
+        const steeringY = centerY + steeringRadius * Math.sin(-steeringAngle);
+
+        ctx.beginPath();
+        ctx.arc(steeringX, steeringY, radius / 20, 0, 2 * Math.PI);  // Adjust size proportionally
+        ctx.fillStyle = '#337ab7';
+        ctx.fill();
+    }
+
+
+
+
+    function updateIndicator() {
+        fetch('/status')
+            .then(response => response.json())
+            .then(data => {
+                const speed = data.speed;  // Assuming speed comes in percentage (0-100%)
+                const steering = data.steering_angle;  // Assuming steering angle comes in degrees (0-180)
+                
+                // Update the tachometer with the fetched data
+                drawTachometer(speed, steering);
+            })
+            .catch(error => console.error('Error fetching status:', error));
+    }
+
+    // Poll for updates every 100ms
+    setInterval(updateIndicator, 100);
+
+
 </script>
 </body>
 </html>

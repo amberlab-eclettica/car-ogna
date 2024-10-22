@@ -1,43 +1,41 @@
 #!/usr/bin/python3
 
+import os
 import io
 import time
 import logging
 import socketserver
 import threading
 from http import server
+import json
 
 #from picamera2 import Picamera2
 #from picamera2.encoders import MJPEGEncoder
 #from picamera2.outputs import FileOutput
 
-# Import the GPIO library
-#import RPi.GPIO as GPIO
-
-# Import the MotorController
-from motors import MotorController
-
-# Increments which control the acceleration
-ACCELERATION = 2
-DECELERATION = 1
-STEERING_STEP = 3
-
-# GPIO Cleanup
-#GPIO.cleanup()
-
-# GPIO pins for the LEDs (adjust as needed)
-PIN_FANALE_1 = 17
-PIN_FANALE_2 = 27
-PIN_FANALE_RETRO = 18
-
-#GPIO.setmode(GPIO.BCM)
-#GPIO.setup(PIN_FANALE_1, GPIO.OUT)
-#GPIO.setup(PIN_FANALE_2, GPIO.OUT)
-#GPIO.setup(PIN_FANALE_RETRO, GPIO.OUT)
+# Import the controllers
+from controls import MotorController, LightController, CameraController
 
 # Create an instance of MotorController
 motor_controller = MotorController()
-timeout = 0.5
+light_controller = LightController()
+
+# Get all the relevant numbers from controls
+# ESC
+MIN_SPEED = motor_controller.MIN_SPEED
+MAX_SPEED = motor_controller.MAX_SPEED
+# Servo
+ZERO_ANGLE = motor_controller.ZERO_ANGLE 
+STEERING_STEP = motor_controller.STEERING_STEP
+MAX_ANGLE = motor_controller.MAX_ANGLE
+MIN_ANGLE = motor_controller.MIN_ANGLE
+
+# Increments which control the acceleration
+ACCELERATION = 4
+DECELERATION = 4
+
+# Video save folder
+VIDEO_DIRECTORY = os.path.join("videos")
 
 # Read the HTML interface from the file index.html
 with open("index.html") as page_html:
@@ -45,7 +43,7 @@ with open("index.html") as page_html:
 
 # State Variables
 current_speed = 0  # Motor speed (0-100%)
-current_steering_angle = 90  # Steering angle (0 = left, 90 = straight, 180 = right)
+current_steering_angle = ZERO_ANGLE  # Steering angle (0 = left, 90 = straight, 180 = right)
 
 # **Updated State Variables**
 keysPressed = {
@@ -69,6 +67,11 @@ class StreamingOutput(io.BufferedIOBase):
             self.condition.notify_all()
 
 class StreamingHandler(server.BaseHTTPRequestHandler):
+    def log_message(self, format, *args):
+        # Suppress logging for specific paths (e.g., /status)
+        if self.path != "/status":
+            super().log_message(format, *args)
+            
     def do_GET(self):
         global is_accelerating, is_braking, is_turning_left, is_turning_right
         if self.path == "/":
@@ -109,18 +112,43 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
                     "Removed streaming client %s: %s", self.client_address, str(e)
                 )
 
+        elif self.path == "/videos":
+            # List all items in the videos directory
+            items = os.listdir(VIDEO_DIRECTORY)
+            # Filter only video files (you can adjust the extension as needed)
+            videos = [item for item in items if item.endswith(('.mjpeg', '.h264'))]
+
+            # Send JSON response
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps({'videos': videos}).encode("utf-8"))
+
+
+        elif self.path.startswith("/videos/"):
+            video_file_name = self.path.split("/")[-1]
+            video_file_path = os.path.join(VIDEO_DIRECTORY, video_file_name)
+
+            print(f"Requested video file path: {video_file_path}")  # Debugging line
+
+            if os.path.exists(video_file_path):
+                self.send_response(200)
+                self.send_header("Content-Type", "application/octet-stream")
+                self.send_header("Content-Disposition", f"attachment; filename={video_file_name}")
+                self.end_headers()
+
+                with open(video_file_path, "rb") as video_file:
+                    self.wfile.write(video_file.read())
+            else:
+                self.send_error(404, "Video not found")
+
         elif self.path == "/toggle_switch_1":
             # Handle request to toggle the LED
             self.send_response(200)
             self.send_header("Content-Type", "text/plain")
             self.end_headers()
             # Toggle the PIN_FANALE_1 state
-            #led_1_state = not GPIO.input(PIN_FANALE_1)
-            #GPIO.output(PIN_FANALE_1, led_1_state)
-            #if led_1_state:
-            #    self.wfile.write("LED turned on".encode("utf-8"))
-            #else:
-            #    self.wfile.write("LED turned off".encode("utf-8"))
+            light_controller.toggle_fanale_1()
 
         elif self.path == "/toggle_switch_2":
             # Handle request to toggle the LED
@@ -128,12 +156,7 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
             self.send_header("Content-Type", "text/plain")
             self.end_headers()
             # Toggle the PIN_FANALE_2 state
-            #led_2_state = not GPIO.input(PIN_FANALE_2)
-            #GPIO.output(PIN_FANALE_2, led_2_state)
-            #if led_2_state:
-            #    self.wfile.write("LED turned on".encode("utf-8"))
-            #else:
-            #    self.wfile.write("LED turned off".encode("utf-8"))
+            light_controller.toggle_fanale_2()
 
         elif self.path == "/toggle_switch_3":
             # Handle request to toggle the LED or perform another action
@@ -141,12 +164,7 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
             self.send_header("Content-Type", "text/plain")
             self.end_headers()
             # Toggle whatever functionality you intend
-            #led_3_state = not GPIO.input(PIN_FANALE_RETRO)
-            #GPIO.output(PIN_FANALE_RETRO, led_3_state)
-            #if led_3_state:
-            #    self.wfile.write("LED turned on".encode("utf-8"))
-            #else:
-            #    self.wfile.write("LED turned off".encode("utf-8"))
+            light_controller.toggle_fanale_retro()
 
         elif self.path.startswith("/button_"):
             # Handle button presses
@@ -155,6 +173,21 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
             self.end_headers()
             button_number = self.path.split("_")[-1]
             print(f"Button {button_number} pressed")
+            # Choose button function
+            if button_number == "red":
+                for i in range(8):  # Replace 10 with the number of iterations you want
+                    light_controller.toggle_fanale_1()
+                    light_controller.toggle_fanale_2()
+                    time.sleep(0.1)
+            elif button_number == "green":
+                # Green button is still doing nothing
+                pass
+            elif button_number == "blue":
+                recorder.start_recording()
+            elif button_number == "yellow":
+                recorder.stop_recording()
+                # Need to restart the stream
+                #picam2.start_recording(MJPEGEncoder(), FileOutput(output))
 
         elif self.path == "/accelerate":
             with state_lock:
@@ -198,10 +231,22 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
                 keysPressed["ArrowRight"] = False
             self.send_response(200)
             self.end_headers()
+            
+        elif self.path == "/status":
+            # Send the current speed and steering angle
+            status = {
+                'speed': current_speed,
+                'steering_angle': current_steering_angle
+            }
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps(status).encode("utf-8"))
 
         else:
             self.send_error(404)
             self.end_headers()
+
 
 class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
     allow_reuse_address = True
@@ -217,7 +262,9 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
 #    )
 #)
 output = StreamingOutput()
+recorder = CameraController() #CameraController(picam2, VIDEO_DIRECTORY)
 #picam2.start_recording(MJPEGEncoder(), FileOutput(output))
+
 
 def update_car_state():
     global current_speed, current_steering_angle
@@ -225,24 +272,24 @@ def update_car_state():
     with state_lock:
         # Handle acceleration
         if keysPressed["ArrowUp"]:
-            if current_speed < 100:
+            if current_speed < MAX_SPEED:
                 current_speed += ACCELERATION  # Gradually increase speed
         elif keysPressed["ArrowDown"]:
             current_speed = 0  # Immediate brake
         else:
-            if current_speed > 0:
+            if current_speed > MIN_SPEED:
                 current_speed -= DECELERATION  # Gradually decrease speed
 
         # Handle steering
         if keysPressed["ArrowLeft"]:
-            current_steering_angle = max(current_steering_angle - 5, 45)  # Turn left
+            current_steering_angle = min(current_steering_angle + STEERING_STEP, MAX_ANGLE)  # Turn left
         elif keysPressed["ArrowRight"]:
-            current_steering_angle = min(current_steering_angle + 5, 135)  # Turn right
+            current_steering_angle = max(current_steering_angle - STEERING_STEP, MIN_ANGLE)  # Turn right
         else:
             # Gradually return to straight position
-            if current_steering_angle < 90:
+            if current_steering_angle < ZERO_ANGLE:
                 current_steering_angle += STEERING_STEP
-            elif current_steering_angle > 90:
+            elif current_steering_angle > ZERO_ANGLE:
                 current_steering_angle -= STEERING_STEP
 
     # Apply updates to the motors
@@ -268,6 +315,5 @@ except KeyboardInterrupt:
     print("Shutting down server.")
 
 finally:
-#    picam2.stop_recording()
+    #picam2.stop_recording()
     motor_controller.cleanup()
-#    GPIO.cleanup()
