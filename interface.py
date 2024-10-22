@@ -138,10 +138,6 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
             else:
                 self.send_error(404, "Video not found")
 
-
-
-
-
         elif self.path == "/toggle_switch_1":
             # Handle request to toggle the LED
             self.send_response(200)
@@ -231,6 +227,17 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
                 keysPressed["ArrowRight"] = False
             self.send_response(200)
             self.end_headers()
+
+        elif self.path == "/status":
+            # Send the current speed and steering angle
+            status = {
+                'speed': current_speed,
+                'steering_angle': current_steering_angle
+            }
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps(status).encode("utf-8"))
 
         else:
             self.send_error(404)

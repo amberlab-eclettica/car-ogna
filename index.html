@@ -177,6 +177,14 @@
         input:checked + .slider:before {
             transform: translateX(26px);
         }
+        
+        /* Tachometer */
+        #tachometer {
+            width: 100%; /* Adjust as needed */
+            height: 100%; /* Adjust as needed */
+            margin-top: 20px; 
+            margin-bottom: -120px; /* Space between tachometer and arrow buttons */
+        }
 
         /* IP address box */
         .ip-box {
@@ -258,6 +266,9 @@
                 <button id="buttonGreen" class="button button-success" onclick="buttonPressed2()">Green</button>
                 <button id="buttonBlue" class="button button-primary" onclick="buttonPressed3()">Start recording</button>
                 <button id="buttonYellow" class="button button-warning" onclick="buttonPressed4()">Stop recording</button>
+            </div>
+            <div id="overlay">
+                <canvas id="tachometer" width="250" height="250"></canvas>
             </div>
             <div class="arrow-buttons">
                 <div class="arrow-row">
@@ -524,6 +535,104 @@
 
     // Call the function when the page loads
     window.onload = fetchVideos;
+
+    // Tachometer
+    const canvas = document.getElementById('tachometer');
+    const ctx = canvas.getContext('2d');
+
+    // Set canvas size directly to match the visible size (CSS size)
+    const width = canvas.offsetWidth;   // Get the width set by CSS
+    const height = canvas.offsetHeight; // Get the height set by CSS
+
+    canvas.width = width;   // Set the canvas width based on the CSS size
+    canvas.height = height; // Set the canvas height based on the CSS size
+
+    const centerX = width / 2;
+    const centerY = height / 2;
+
+    // Adjust radius relative to the new size
+    const radius = Math.min(width, height) / 2 - 20;
+
+    function drawTachometer(speed, steering) {
+        // Clear the canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw speed arc
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, Math.PI, 2 * Math.PI, false);
+        ctx.lineWidth = radius / 5; // Adjust line width proportionally
+        ctx.strokeStyle = '#ddd';
+        ctx.stroke();
+
+        // Draw numbers along the speed arc
+        ctx.font = `${radius / 5}px Arial`; // Adjust font size proportionally
+        ctx.fillStyle = '#000';
+        for (let i = 0; i <= 100; i += 20) {
+            const angle = Math.PI + (Math.PI * (i / 100));
+            const x = centerX + (radius - 25) * Math.cos(angle);
+            const y = centerY + (radius - 25) * Math.sin(angle);
+            ctx.fillText(i.toString(), x - 10, y + 5);
+        }
+
+        // Draw speed needle
+        const speedAngle = Math.PI + (Math.PI * (speed / 100));
+        const needleEndX = centerX + radius * Math.cos(speedAngle);
+        const needleEndY = centerY + radius * Math.sin(speedAngle);
+
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(needleEndX, needleEndY);
+        ctx.lineWidth = radius / 15; // Adjust line width proportionally
+        ctx.strokeStyle = '#ff5733';
+        ctx.stroke();
+
+        // Draw rounded end for speed needle
+        const roundedEndRadius = radius / 30;  // Adjust needle end size proportionally
+        ctx.beginPath();
+        ctx.arc(needleEndX, needleEndY, roundedEndRadius, 0, 2 * Math.PI);
+        ctx.fillStyle = '#ff5733';
+        ctx.fill();
+
+        // Draw the circle at the origin of the speed line
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius / 10, 0, 2 * Math.PI);  // Adjust size proportionally
+        ctx.fillStyle = '#ff5733';
+        ctx.fill();
+
+        // Draw steering arc
+        const steeringRadius = radius - 70;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, steeringRadius, Math.PI, 2 * Math.PI, false);
+        ctx.lineWidth = radius / 10; // Adjust line width proportionally
+        ctx.strokeStyle = '#aaa';
+        ctx.stroke();
+
+        // Draw steering indicator
+        const steeringAngle = (Math.PI / 2) + ((steering / 180) * Math.PI);
+        const steeringX = centerX + steeringRadius * Math.cos(steeringAngle);
+        const steeringY = centerY + steeringRadius * Math.sin(-steeringAngle);
+
+        ctx.beginPath();
+        ctx.arc(steeringX, steeringY, radius / 20, 0, 2 * Math.PI);  // Adjust size proportionally
+        ctx.fillStyle = '#337ab7';
+        ctx.fill();
+    }
+
+    function updateIndicator() {
+        fetch('/status')
+            .then(response => response.json())
+            .then(data => {
+                const speed = data.speed;  // Assuming speed comes in percentage (0-100%)
+                const steering = data.steering_angle;  // Assuming steering angle comes in degrees (0-180)
+                
+                // Update the tachometer with the fetched data
+                drawTachometer(speed, steering);
+            })
+            .catch(error => console.error('Error fetching status:', error));
+    }
+
+    // Poll for updates every 100ms
+    setInterval(updateIndicator, 100);
 
 </script>
 </body>
