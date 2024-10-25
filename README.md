@@ -3,3 +3,5 @@
 
 Building an RC FPV car controlled via a web browser.
 The chassis is heavily based on the <a href="https://www.thingiverse.com/thing:4233353">Carduino V2</a>, merged with a <a href="https://www.thingiverse.com/thing:1639568"> Pi Zero camera housing</a>, and with some <a href="https://makerworld.com/it/models/212433?from=search">custom wheels</a>.
+More details coming soon.
+<img src="PXL_20241018_162341279.jpg" width="600"/>
