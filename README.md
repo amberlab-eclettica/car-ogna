@@ -31,7 +31,42 @@ After connecting via SSH, run the following commands to ensure the system is upd
     sudo apt update
     sudo apt upgrade -y
     sudo apt install -y git python3-picamera2 --no-install-recommends
+
+The full update and installation can take a while.
+
+## Step 2: Configure gpiod and Clone the Project Repository
+
+First, ensure `gpiod` starts automatically with the system. Run the following command to enable it:
+
+    sudo systemctl enable pigpiod
+
+Next, clone the Git repository for the car-ogna project to your Raspberry Pi, and reboot the Raspberry for all changes to take effect:
+
+    git clone https://github.com/amberlab-eclettica/car-ogna.git
+    sudo reboot
+
+## Step 3: Install USB WiFi Adapter Drivers
+
+For those using USB WiFi adapters, navigate into the project folder:
+
+    cd car-ogna
+
+Then, install the drivers for the USB adapter with the following command:
+
+    sudo dpkg -i driver/AX300-WiFi-Adapter-Linux-Driver-arm.deb
     
+also this might take some time.
 
+## Step 4: Launch and Autostart the Interface
 
+To check that everything is working correctly, launch the interface with the following command:
 
+    python interface.py
+    
+If everything goes well, the server should start, and you will see two columns of numbers on the screen displaying the speed and steering commands of the car, respectively.
+To view the FPV stream and control the car, using a web browser navigate to:
+
+    YOURCARNAME.local:8000
+    YOURCARIP:8000
+    
+Once there, you can click on the commands or press the keys on your keyboard to check that the car responds as expected.
