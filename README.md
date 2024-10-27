@@ -56,8 +56,9 @@ For those using USB WiFi adapters, navigate into the project folder:
 Then, install the drivers for the USB adapter with the following command:
 
     sudo dpkg -i driver/AX300-WiFi-Adapter-Linux-Driver-arm.deb
+    sudo reboot
     
-also this might take some time.
+also this might take some time, reboot at the end.
 
 ## Step 4: Launch and Autostart the Interface
 
