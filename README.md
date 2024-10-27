@@ -113,7 +113,7 @@ First, check which WiFi interface your device is using (for example, `wlan1`) wi
 
 Next, start a hotspot using the following commands:
     
-    sudo nmcli con add type wifi ifname wlan1 con-name Hostspot autoconnect yes ssid carogna-hotspot
+    sudo nmcli con add type wifi ifname wlan1 con-name carogna-hotspot autoconnect yes ssid carogna-hotspot
     sudo nmcli con modify carogna-hotspot 802-11-wireless.mode ap 802-11-wireless.band bg ipv4.method shared
     sudo nmcli con modify carogna-hotspot wifi-sec.key-mgmt wpa-psk
     sudo nmcli con modify carogna-hotspot wifi-sec.psk "PASSWORD"
