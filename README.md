@@ -70,3 +70,37 @@ To view the FPV stream and control the car, using a web browser navigate to:
     YOURCARIP:8000
     
 Once there, you can click on the commands or press the keys on your keyboard to check that the car responds as expected.
+If all works well move to step 5, otherwise it's troubleshooting time.
+
+## Step 5: Autostart the Interface
+
+To autostart the interface, you need to create a service file named `interface.service`. Use a text editor to create and edit the file:
+
+    sudo nano /etc/systemd/system/interface.service
+
+Then, add the following content to the file:
+    
+    [Unit]
+    Description=Interface for RC car control
+    After=network.target
+    
+    [Service]
+    ExecStart=/usr/bin/python3 /home/USERNAME/car-ogna/interface.py
+    WorkingDirectory=/home/USERNAME/car-ogna/
+    StandardOutput=inherit
+    StandardError=inherit
+    Restart=always
+    User=USERNAME
+    
+    [Install]
+    WantedBy=multi-user.target
+
+Save the file (CTRL-O) and exit the editor (CTRL-X).
+
+Finally, enable and start the service with the following commands:
+
+    sudo systemctl enable interface.service
+    sudo systemctl start interface.service
+
+
+
