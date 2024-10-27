@@ -1,7 +1,7 @@
 # Project car-ogna
 ### Amberlab - 2024
 
-This project involves creating a Raspberry Pi-controlled RC car, built for First-Person View (FPV) driving. The car is controlled through a web browser, using either the arrow keys on your PC keyboard or (coming soon) a joystick for enhanced control. 
+This project involves creating a Raspberry Pi-controlled RC car, built for First-Person View (FPV) driving. The car is controlled through a web browser, using either the arrow keys on your PC keyboard or (coming soon) a joystick for enhanced control.
 <img src="PXL_20241018_162341279.jpg" width="600"/>
 
 ### Electronics and Hardware
@@ -18,3 +18,20 @@ The car’s chassis is based on the <a href="https://www.thingiverse.com/thing:4
 ### Power System
 
 Power is provided by 2S Li-ion batteries** with a USB-C charging port built into the car for easy recharging, and a Battery Elimination Circuit (BEC) regulates power for the Raspberry Pi. The car also features bright LED headlights at the front and a red LED at the back for visibility.
+
+## Assembling the car
+
+## Setup of the Raspberry
+Once all hardware components are mounted and connected, flash the Raspberry Pi OS onto your SD card, power on the Raspberry Pi, and [SSH into the device](https://www.raspberrypi.com/documentation/computers/remote-access.html#ssh). It is preferrable to use the headless version of Raspbian, as it is lighter and allows a faster stream.
+
+### Step 1: Initial Setup and Updates
+
+After connecting via SSH, run the following commands to ensure the system is updated and upgraded, and install the necessary packages, namely picamera2 and git.
+
+    sudo apt update
+    sudo apt upgrade -y
+    sudo apt install -y git python3-picamera2 --no-install-recommends
+    
+
+
+
