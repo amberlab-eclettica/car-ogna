@@ -120,7 +120,7 @@ Next, start a hotspot using the following commands:
     sudo nmcli con modify carogna-hotspot wifi-sec.psk "PASSWORD"
     sudo nmcli con up carogna-hotspot
 
-This will create a hotspot named "Hostspot" with the specified password.
+This will create a hotspot named "carogna-hotspot" with the specified password "PASSWORD".
 
 ## Final Remarks
 
