@@ -5,6 +5,7 @@ from gpiozero.pins.pigpio import PiGPIOFactory
 
 from picamera2.encoders import MJPEGEncoder, H264Encoder
 from picamera2.outputs import FileOutput
+import numpy as np
 
 # Set the pin factory to use pigpio
 factory = PiGPIOFactory()
@@ -45,8 +46,12 @@ class MotorController:
         print("Calibration complete.")
 
     def set_speed(self, speed):
+        """Define time vs. speed increase function"""
+        def speed_function(x):
+            return 10 * np.sqrt(x)
+
         """Set the speed of the brushless motor (0-100%)."""
-        self.pwm_esc.value = 0.05 + (speed / 2000)  # the ESC uses a 0.5 - 0.1 scale for PWM
+        self.pwm_esc.value = 0.05 + (speed_function(speed) / 2000)  # the ESC uses a 0.5 - 0.1 scale for PWM
 
     def steer(self, angle):
         """Set the steering angle for the servo motor."""
