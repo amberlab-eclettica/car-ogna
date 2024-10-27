@@ -103,4 +103,23 @@ Finally, enable and start the service with the following commands:
     sudo systemctl start interface.service
 
 
+## Step 5: Set Up a WiFi Hotspot
+
+First, check which WiFi interface your device is using (for example, `wlan1`) with the following command:
+
+    nmcli device
+
+Next, start a hotspot using the following commands:
+    
+    sudo nmcli con add type wifi ifname wlan1 con-name Hostspot autoconnect yes ssid carogna-hotspot
+    sudo nmcli con modify carogna-hotspot 802-11-wireless.mode ap 802-11-wireless.band bg ipv4.method shared
+    sudo nmcli con modify carogna-hotspot wifi-sec.key-mgmt wpa-psk
+    sudo nmcli con modify carogna-hotspot wifi-sec.psk "PASSWORD"
+    sudo nmcli con up carogna-hotspot
+
+This will create a hotspot named "Hostspot" with the specified password.
+
+## Final Remarks
+
+Now you can use your car either by connecting it to an existing network or using the WiFi hotspot. Reboot the car one last time and verify that both the interface and the hotspot are autostarting correctly.
 
