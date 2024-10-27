@@ -17,7 +17,7 @@ The car’s chassis is based on the <a href="https://www.thingiverse.com/thing:4
 
 ### Power System
 
-Power is provided by 2S Li-ion batteries** with a USB-C charging port built into the car for easy recharging, and a Battery Elimination Circuit (BEC) regulates power for the Raspberry Pi. The car also features bright LED headlights at the front and a red LED at the back for visibility.
+Power is provided by 2S Li-ion batteries with a USB-C charging port built into the car for easy recharging, and a Battery Elimination Circuit (BEC) regulates power for the Raspberry Pi. The car also features bright LED headlights at the front and a red LED at the back for visibility.
 
 ## Assembling the car
 
