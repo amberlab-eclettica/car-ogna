@@ -21,6 +21,8 @@ Power is provided by 2S Li-ion batteries** with a USB-C charging port built into
 
 ## Assembling the car
 
+Work in progress.
+
 ## Setup of the Raspberry
 Once all hardware components are mounted and connected, flash the Raspberry Pi OS onto your SD card, power on the Raspberry Pi, and [SSH into the device](https://www.raspberrypi.com/documentation/computers/remote-access.html#ssh). It is preferrable to use the headless version of Raspbian, as it is lighter and allows a faster stream.
 
