@@ -2,7 +2,12 @@
 ### Amberlab - 2024
 
 This project involves creating a Raspberry Pi-controlled RC car, built for First-Person View (FPV) driving. The car is controlled through a web browser, using either the arrow keys on your PC keyboard or (coming soon) a joystick for enhanced control.
-<img src="PXL_20241018_162341279.jpg" width="600"/>
+<img src="PXL_20241027_181944231.jpg" width="600"/>
+<img src="PXL_20241027_182001936.jpg" width="600"/>
+
+<img src="PXL_20241027_181953164.jpg" width="600"/>
+<img src="PXL_20241027_182005586.jpg" width="600"/>
+
 
 ### Electronics and Hardware
 
