@@ -22,6 +22,7 @@ Power is provided by 2S Li-ion batteries with a USB-C charging port built into t
 ## Assembling the car
 
 Work in progress.
+
 <img src="img/PXL_20241027_182001936.jpg" width="600"/>
 
 
