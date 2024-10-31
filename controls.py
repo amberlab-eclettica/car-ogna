@@ -15,7 +15,7 @@ class MotorController:
         # Set up constants
         self.ESC_PIN = 18  # GPIO pin for the ESC signal
         self.ESC_FREQUENCY = 50 # Works at 50 Hz
-        self.SERVO_PIN = 15  # GPIO pin for the servo
+        self.SERVO_PIN = 23  # GPIO pin for the servo
 
         # ESC options
         self.MIN_SPEED = 0
@@ -66,9 +66,9 @@ class MotorController:
 class LightController:
     def __init__(self):
         # Define PINs
-        self.PIN_FANALE_1 = 17
-        self.PIN_FANALE_2 = 27
-        self.PIN_FANALE_RETRO = 22  
+        self.PIN_FANALE_1 = 27
+        self.PIN_FANALE_2 = 22
+        self.PIN_FANALE_RETRO = 17  
 
         # Set up LEDs using gpiozero
         self.fanale_1 = LED(self.PIN_FANALE_1, pin_factory=factory)
