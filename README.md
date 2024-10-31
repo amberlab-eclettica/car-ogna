@@ -3,11 +3,6 @@
 
 This project involves creating a Raspberry Pi-controlled RC car, built for First-Person View (FPV) driving. The car is controlled through a web browser, using either the arrow keys on your PC keyboard or (coming soon) a joystick for enhanced control.
 <img src="img/PXL_20241027_181944231.jpg" width="600"/>
-<img src="img/PXL_20241027_182001936.jpg" width="600"/>
-
-<img src="img/PXL_20241027_181953164.jpg" width="600"/>
-<img src="img/PXL_20241027_182005586.jpg" width="600"/>
-
 
 ### Electronics and Hardware
 
@@ -27,6 +22,8 @@ Power is provided by 2S Li-ion batteries with a USB-C charging port built into t
 ## Assembling the car
 
 Work in progress.
+<img src="img/PXL_20241027_182001936.jpg" width="600"/>
+
 
 ## Setup of the Raspberry
 Once all hardware components are mounted and connected, flash the Raspberry Pi OS onto your SD card, power on the Raspberry Pi, and [SSH into the device](https://www.raspberrypi.com/documentation/computers/remote-access.html#ssh). It is preferrable to use the headless version of Raspbian, as it is lighter and allows a faster stream.
