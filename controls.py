@@ -19,7 +19,7 @@ class MotorController:
 
         # ESC options
         self.MIN_SPEED = 0
-        self.MAX_SPEED = 100
+        self.MAX_SPEED = 30
 
         # Servo options
         self.ZERO_ANGLE = 0
@@ -45,13 +45,13 @@ class MotorController:
         time.sleep(2)
         print("Calibration complete.")
 
-    def set_speed(self, speed):
+    def speed_function(self, x):
         """Define time vs. speed increase function"""
-        def speed_function(x):
-            return 10 * np.sqrt(x)
+        return x #10 * np.sqrt(x)
 
+    def set_speed(self, speed):
         """Set the speed of the brushless motor (0-100%)."""
-        self.pwm_esc.value = 0.05 + (speed_function(speed) / 2000)  # the ESC uses a 0.5 - 0.1 scale for PWM
+        self.pwm_esc.value = 0.05 + (self.speed_function(speed) / 2000)  # the ESC uses a 0.5 - 0.1 scale for PWM
 
     def steer(self, angle):
         """Set the steering angle for the servo motor."""

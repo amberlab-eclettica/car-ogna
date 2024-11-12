@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Configuration Page</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 600px;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .output-message {
+            margin-top: 15px;
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>System Configuration</h1>
+    <div class="form-container">
+        <div class="form-group">
+            <label for="param1">Parameter 1:</label>
+            <input type="text" id="param1" placeholder="Enter value for Parameter 1">
+        </div>
+        <div class="form-group">
+            <label for="param2">Parameter 2:</label>
+            <input type="number" id="param2" placeholder="Enter value for Parameter 2">
+        </div>
+        <div class="form-group">
+            <label for="param3">Parameter 3:</label>
+            <select id="param3">
+                <option value="option1">Option 1</option>
+                <option value="option2">Option 2</option>
+                <option value="option3">Option 3</option>
+            </select>
+        </div>
+        <button onclick="saveConfiguration()">Save Configuration</button>
+        <button onclick="reloadServer()">Reload Server</button>
+        <div id="outputMessage" class="output-message"></div>
+    </div>
+
+    <script>
+        function saveConfiguration() {
+            const param1 = document.getElementById('param1').value;
+            const param2 = document.getElementById('param2').value;
+            const param3 = document.getElementById('param3').value;
+
+            const configData = {
+                parameter1: param1,
+                parameter2: param2,
+                parameter3: param3
+            };
+
+            fetch('/save_config', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(configData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('outputMessage').innerText = data.message;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('outputMessage').innerText = 'Failed to save configuration';
+            });
+        }
+
+        function reloadServer() {
+            fetch('/reload_server', {
+                method: 'POST',
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('outputMessage').innerText = data.message;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('outputMessage').innerText = 'Failed to reload server';
+            });
+        }
+
+    </script>
+</body>
+</html>

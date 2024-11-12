@@ -198,6 +198,24 @@
             font-size: 14px;
         }
 
+        .config-button {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .config-button:hover {
+            background-color: #0056b3;
+        }
+
         .video-list {
             position: absolute;
             bottom: 10px;
@@ -285,6 +303,8 @@
 
     <!-- IP address box -->
     <div class="ip-box" id="ipAddress">carogna2.local:8000</div>
+
+    <a href="config.html" class="config-button">Configuration</a>
 
     <div class="video-list" id="videos">
         <h3>Recorded Videos</h3>

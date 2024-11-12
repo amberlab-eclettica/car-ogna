@@ -74,6 +74,19 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
             self.send_header("Location", "/index.html")
             self.end_headers()
 
+        elif self.path == "/config.html":
+            try:
+                # Set the path to your HTML file
+                with open("config.html", "rb") as config_file:
+                    content = config_file.read()
+                    self.send_response(200)
+                    self.send_header("Content-Type", "text/html")
+                    self.send_header("Content-Length", len(content))
+                    self.end_headers()
+                    self.wfile.write(content)
+            except FileNotFoundError:
+                self.send_error(404, "Configuration page not found.")
+
         elif self.path == "/index.html":
             content = PAGE.encode("utf-8")
             self.send_response(200)
@@ -106,7 +119,6 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
                 logging.warning(
                     "Removed streaming client %s: %s", self.client_address, str(e)
                 )
-
 
         elif self.path == "/videos":
             # List all items in the videos directory
@@ -239,6 +251,69 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps(status).encode("utf-8"))
 
+    def do_POST(self):
+        if self.path == '/save_config':
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+
+            try:
+                # Parse the JSON data from the POST request
+                config_data = json.loads(post_data)
+                param1 = config_data.get('parameter1')
+                param2 = config_data.get('parameter2')
+                param3 = config_data.get('parameter3')
+
+                # Path to your configuration file
+                config_file_path = 'config.json'
+
+                # Check if the config file exists, if not create it
+                if not os.path.exists(config_file_path):
+                    with open(config_file_path, 'w') as f:
+                        json.dump({}, f)
+
+                # Load existing data, update, and save back to file
+                with open(config_file_path, 'r+') as f:
+                    data = json.load(f)
+                    data['parameter1'] = param1
+                    data['parameter2'] = param2
+                    data['parameter3'] = param3
+
+                    # Move the file pointer to the beginning before writing
+                    f.seek(0)
+                    json.dump(data, f, indent=4)
+                    f.truncate()  # Make sure to truncate any extra content if the new data is smaller
+
+                # Send response back to client indicating success
+                self.send_response(200)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                response = {'message': 'Configuration saved successfully!'}
+                self.wfile.write(json.dumps(response).encode('utf-8'))
+
+            except Exception as e:
+                # Handle error if parsing or file writing fails
+                self.send_response(400)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                response = {'message': f'Error: {str(e)}'}
+                self.wfile.write(json.dumps(response).encode('utf-8'))
+
+        elif self.path == '/reload_server':
+            try:
+                # Run the shell command to restart the server
+                subprocess.run(['sudo', 'systemctl', 'restart', 'interface.service'], check=True)
+                response = {'message': 'Server reloaded successfully!'}
+                self.send_response(200)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps(response).encode('utf-8'))
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                response = {'message': f'Error reloading server: {str(e)}'}
+                self.wfile.write(json.dumps(response).encode('utf-8'))
+
         else:
             self.send_error(404)
             self.end_headers()
@@ -275,6 +350,8 @@ def update_car_state():
         else:
             if current_speed > MIN_SPEED:
                 current_speed -= DECELERATION  # Gradually decrease speed
+            elif current_speed < DECELERATION:
+                current_speed = MIN_SPEED # if speed is lower than deceleration, just stop
 
         # Handle steering
         if keysPressed["ArrowLeft"]:
