@@ -125,6 +125,31 @@ Next, start a hotspot using the following commands:
 
 This will create a hotspot named "carogna-hotspot" with the specified password "PASSWORD".
 
+## Step 6: Allow server restarting with no password
+This is relevant if, after modifying some of the car configuration parameters, you want to restart the server instead of rebooting the car.
+
+Open the sudoers file using the visudo command. This will prevent syntax errors that could lock you out of sudo privileges.
+        
+    sudo visudo
+        
+In the sudoers file, add a line at the end of the file (or in the appropriate section) that allows the user to restart the service without needing a password.
+
+The syntax to allow a user to run the systemctl restart command for a specific service without a password is:
+
+    username ALL=NOPASSWD: /bin/systemctl restart interface.service
+
+Replace username with the actual username that you want to grant this privilege to.
+
+After adding the rule, save and exit the editor:
+If you're using visudo, press Ctrl + X to exit, then press Y to confirm changes, and Enter to save.
+
+Test the configuration: After editing the sudoers file, try running the following command as the specified user:
+
+    sudo systemctl restart interface.service
+
+The service should restart without asking for a password.
+This will grant the specified user permission to restart interface.service without requiring sudo passwords.
+
 ## Final Remarks
 
 Now you can use your car either by connecting it to an existing network or using the WiFi hotspot. Reboot the car one last time and verify that both the interface and the hotspot are autostarting correctly.
