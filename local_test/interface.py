@@ -67,11 +67,6 @@ class StreamingOutput(io.BufferedIOBase):
             self.condition.notify_all()
 
 class StreamingHandler(server.BaseHTTPRequestHandler):
-    def log_message(self, format, *args):
-        # Suppress logging for specific paths (e.g., /status)
-        if self.path != "/status":
-            super().log_message(format, *args)
-            
     def do_GET(self):
         global is_accelerating, is_braking, is_turning_left, is_turning_right
         if self.path == "/":
@@ -111,6 +106,7 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
                 logging.warning(
                     "Removed streaming client %s: %s", self.client_address, str(e)
                 )
+
 
         elif self.path == "/videos":
             # List all items in the videos directory
@@ -187,7 +183,7 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
             elif button_number == "yellow":
                 recorder.stop_recording()
                 # Need to restart the stream
-                #picam2.start_recording(MJPEGEncoder(), FileOutput(output))
+                picam2.start_recording(MJPEGEncoder(), FileOutput(output))
 
         elif self.path == "/accelerate":
             with state_lock:
@@ -231,7 +227,7 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
                 keysPressed["ArrowRight"] = False
             self.send_response(200)
             self.end_headers()
-            
+
         elif self.path == "/status":
             # Send the current speed and steering angle
             status = {
@@ -261,8 +257,8 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
 #        main={"size": (640, 480)}, queue=False, buffer_count=2
 #    )
 #)
-output = StreamingOutput()
-recorder = CameraController() #CameraController(picam2, VIDEO_DIRECTORY)
+#output = StreamingOutput()
+#recorder = CameraController(picam2, VIDEO_DIRECTORY)
 #picam2.start_recording(MJPEGEncoder(), FileOutput(output))
 
 
@@ -315,5 +311,5 @@ except KeyboardInterrupt:
     print("Shutting down server.")
 
 finally:
-    #picam2.stop_recording()
+    picam2.stop_recording()
     motor_controller.cleanup()
