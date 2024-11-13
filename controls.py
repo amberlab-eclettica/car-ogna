@@ -5,27 +5,33 @@ from gpiozero.pins.pigpio import PiGPIOFactory
 
 from picamera2.encoders import MJPEGEncoder, H264Encoder
 from picamera2.outputs import FileOutput
+
 import numpy as np
+import json
 
 # Set the pin factory to use pigpio
 factory = PiGPIOFactory()
 
+# Load configuration from JSON file
+with open('config.json', 'r') as config_file:
+    config = json.load(config_file)
+
 class MotorController:
     def __init__(self):
-        # Set up constants
-        self.ESC_PIN = 18  # GPIO pin for the ESC signal
-        self.ESC_FREQUENCY = 50 # Works at 50 Hz
-        self.SERVO_PIN = 23  # GPIO pin for the servo
+        # Load configuration values from JSON
+        self.ESC_PIN = config["ESC_PIN"]  # GPIO pin for the ESC signal
+        self.ESC_FREQUENCY = config["ESC_FREQUENCY"] # Works at 50 Hz
+        self.SERVO_PIN = config["SERVO_PIN"]  # GPIO pin for the servo
 
         # ESC options
-        self.MIN_SPEED = 0
-        self.MAX_SPEED = 30
+        self.MIN_SPEED = config["MIN_SPEED"]
+        self.MAX_SPEED = config["MAX_SPEED"]
 
         # Servo options
-        self.ZERO_ANGLE = 0
-        self.STEERING_STEP = 25 # needs to be multiple of max and min angle
-        self.MAX_ANGLE = 50
-        self.MIN_ANGLE = -50
+        self.ZERO_ANGLE = config["ZERO_ANGLE"]
+        self.STEERING_STEP = config["STEERING_STEP"] # needs to be multiple of max and min angle
+        self.MAX_ANGLE = config["MAX_ANGLE"]
+        self.MIN_ANGLE = config["MIN_ANGLE"]
 
         # Set up PWM for ESC using gpiozero
         self.pwm_esc = PWMOutputDevice(self.ESC_PIN, pin_factory=factory, frequency=self.ESC_FREQUENCY)
@@ -65,10 +71,10 @@ class MotorController:
 
 class LightController:
     def __init__(self):
-        # Define PINs
-        self.PIN_FANALE_1 = 27
-        self.PIN_FANALE_2 = 22
-        self.PIN_FANALE_RETRO = 17  
+        # Load configuration values from JSON
+        self.PIN_FANALE_1 = config["PIN_FANALE_1"]
+        self.PIN_FANALE_2 = config["PIN_FANALE_2"]
+        self.PIN_FANALE_RETRO = config["PIN_FANALE_RETRO"]
 
         # Set up LEDs using gpiozero
         self.fanale_1 = LED(self.PIN_FANALE_1, pin_factory=factory)

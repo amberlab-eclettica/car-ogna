@@ -12,6 +12,9 @@ from http import server
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import json
+# Load configuration from JSON file
+with open('config.json', 'r') as config_file:
+    config = json.load(config_file)
 
 #from picamera2 import Picamera2
 #from picamera2.encoders import MJPEGEncoder
@@ -35,8 +38,14 @@ MAX_ANGLE = motor_controller.MAX_ANGLE
 MIN_ANGLE = motor_controller.MIN_ANGLE
 
 # Increments which control the acceleration
-ACCELERATION = 4
-DECELERATION = 4
+ACCELERATION = config["ACCELERATION"]
+DECELERATION = config["DECELERATION"]
+
+# Streamin settings
+VIDEO_RESOLUTION_X = config["VIDEO_RESOLUTION_X"]
+VIDEO_RESOLUTION_Y = config["VIDEO_RESOLUTION_Y"]
+VIDEO_QUEUE = config["VIDEO_QUEUE"]
+VIDEO_BUFFER = config["VIDEO_BUFFER"]
 
 # Video save folder
 VIDEO_DIRECTORY = os.path.join("videos")
@@ -267,9 +276,31 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
             try:
                 # Parse the JSON data from the POST request
                 config_data = json.loads(post_data)
-                param1 = config_data.get('parameter1')
-                param2 = config_data.get('parameter2')
-                param3 = config_data.get('parameter3')
+
+                # Convert strings to appropriate types
+                config_data['ESC_PIN'] = int(config_data['ESC_PIN'])
+                config_data['ESC_FREQUENCY'] = int(config_data['ESC_FREQUENCY'])
+                config_data['SERVO_PIN'] = int(config_data['SERVO_PIN'])
+                config_data['MIN_SPEED'] = int(config_data['MIN_SPEED'])
+                config_data['MAX_SPEED'] = int(config_data['MAX_SPEED'])
+                config_data['ZERO_ANGLE'] = int(config_data['ZERO_ANGLE'])
+                config_data['STEERING_STEP'] = int(config_data['STEERING_STEP'])
+                config_data['MAX_ANGLE'] = int(config_data['MAX_ANGLE'])
+                config_data['MIN_ANGLE'] = int(config_data['MIN_ANGLE'])
+                config_data['PIN_FANALE_1'] = int(config_data['PIN_FANALE_1'])
+                config_data['PIN_FANALE_2'] = int(config_data['PIN_FANALE_2'])
+                config_data['PIN_FANALE_RETRO'] = int(config_data['PIN_FANALE_RETRO'])
+                config_data['ACCELERATION'] = int(config_data['ACCELERATION'])
+                config_data['DECELERATION'] = int(config_data['DECELERATION'])
+                config_data['VIDEO_BUFFER'] = int(config_data['VIDEO_BUFFER'])
+
+                # Handle boolean values
+                config_data['VIDEO_QUEUE'] = config_data['VIDEO_QUEUE'] == 'true'
+
+                # Handle the resolution string for VIDEO_RESOLUTION_X and VIDEO_RESOLUTION_Y
+                resolution = config_data['VIDEO_RESOLUTION'].split('x')
+                config_data['VIDEO_RESOLUTION_X'] = int(resolution[0])
+                config_data['VIDEO_RESOLUTION_Y'] = int(resolution[1])
 
                 # Path to your configuration file
                 config_file_path = 'config.json'
@@ -277,19 +308,19 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
                 # Check if the config file exists, if not create it
                 if not os.path.exists(config_file_path):
                     with open(config_file_path, 'w') as f:
-                        json.dump({}, f)
+                        json.dump(config_data, f, indent=4)
+                else:
+                    # Load existing data, update with new data, and save back to file
+                    with open(config_file_path, 'r+') as f:
+                        data = json.load(f)
 
-                # Load existing data, update, and save back to file
-                with open(config_file_path, 'r+') as f:
-                    data = json.load(f)
-                    data['parameter1'] = param1
-                    data['parameter2'] = param2
-                    data['parameter3'] = param3
+                        # Update data with the new config values
+                        data.update(config_data)
 
-                    # Move the file pointer to the beginning before writing
-                    f.seek(0)
-                    json.dump(data, f, indent=4)
-                    f.truncate()  # Make sure to truncate any extra content if the new data is smaller
+                        # Move the file pointer to the beginning before writing
+                        f.seek(0)
+                        json.dump(data, f, indent=4)
+                        f.truncate()  # Make sure to truncate any extra content if the new data is smaller
 
                 # Send response back to client indicating success
                 self.send_response(200)
@@ -305,6 +336,7 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
                 self.end_headers()
                 response = {'message': f'Error: {str(e)}'}
                 self.wfile.write(json.dumps(response).encode('utf-8'))
+
 
         elif self.path == '/reload_server':
             try:
@@ -338,7 +370,7 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
 # Configure the camera to minimize latency
 #picam2.configure(
 #    picam2.create_video_configuration(
-#        main={"size": (640, 480)}, queue=False, buffer_count=2
+#        main={"size": (VIDEO_RESOLUTION_X, VIDEO_RESOLUTION_Y)}, queue=VIDEO_QUEUE, buffer_count=VIDEO_BUFFER
 #    )
 #)
 #output = StreamingOutput()
