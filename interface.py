@@ -7,6 +7,8 @@ import logging
 import socketserver
 import threading
 from http import server
+import subprocess
+
 import json
 
 from picamera2 import Picamera2
