@@ -85,6 +85,10 @@
             <input type="number" id="MAX_SPEED" value="30">
         </div>
         <div class="form-group">
+            <label for="ACCELERATION_FUNCTION">Acceleration function (x):</label>
+            <input type="string" id="ACCELERATION_FUNCTION" value="x">
+        </div>
+        <div class="form-group">
             <label for="ZERO_ANGLE">Zero Angle (0):</label>
             <input type="number" id="ZERO_ANGLE" value="0">
         </div>
@@ -156,6 +160,7 @@
                 SERVO_PIN: document.getElementById('SERVO_PIN').value,
                 MIN_SPEED: document.getElementById('MIN_SPEED').value,
                 MAX_SPEED: document.getElementById('MAX_SPEED').value,
+                ACCELERATION_FUNCTION: document.getElementById('ACCELERATION_FUNCTION').value,
                 ZERO_ANGLE: document.getElementById('ZERO_ANGLE').value,
                 STEERING_STEP: document.getElementById('STEERING_STEP').value,
                 MAX_ANGLE: document.getElementById('MAX_ANGLE').value,

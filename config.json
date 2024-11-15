@@ -4,6 +4,7 @@
     "SERVO_PIN": 23,
     "MIN_SPEED": 0,
     "MAX_SPEED": 30,
+    "ACCELERATION_FUNCTION": "10 * np.sqrt(x)",
     "ZERO_ANGLE": 0,
     "STEERING_STEP": 25,
     "MAX_ANGLE": 50,

@@ -16,6 +16,22 @@ factory = PiGPIOFactory()
 with open('config.json', 'r') as config_file:
     config = json.load(config_file)
 
+def string_to_function(expression):
+    """
+    Converts a string representing a mathematical expression into a Python function that takes variables.
+    
+    Parameters:
+    expression (str): The mathematical expression as a string.
+    
+    Returns:
+    function: A function that evaluates the expression for given variables.
+    """
+    def generated_function(**kwargs):
+        # Pass kwargs as the local dictionary for variable substitution
+        return eval(expression, {"np": np}, kwargs)
+    
+    return generated_function
+
 class MotorController:
     def __init__(self):
         # Load configuration values from JSON
@@ -26,6 +42,7 @@ class MotorController:
         # ESC options
         self.MIN_SPEED = config["MIN_SPEED"]
         self.MAX_SPEED = config["MAX_SPEED"]
+        self.ACCELERATION_FUNCTION = config["ACCELERATION_FUNCTION"]
 
         # Servo options
         self.ZERO_ANGLE = config["ZERO_ANGLE"]
@@ -53,7 +70,8 @@ class MotorController:
 
     def speed_function(self, x):
         """Define time vs. speed increase function"""
-        return x #10 * np.sqrt(x)
+        function = string_to_function(self.ACCELERATION_FUNCTION)
+        return function(x=x)
 
     def set_speed(self, speed):
         """Set the speed of the brushless motor (0-100%)."""

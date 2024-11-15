@@ -283,6 +283,7 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
                 config_data['SERVO_PIN'] = int(config_data['SERVO_PIN'])
                 config_data['MIN_SPEED'] = int(config_data['MIN_SPEED'])
                 config_data['MAX_SPEED'] = int(config_data['MAX_SPEED'])
+                config_data['ACCELERATION_FUNCTION'] = config_data['ACCELERATION_FUNCTION']
                 config_data['ZERO_ANGLE'] = int(config_data['ZERO_ANGLE'])
                 config_data['STEERING_STEP'] = int(config_data['STEERING_STEP'])
                 config_data['MAX_ANGLE'] = int(config_data['MAX_ANGLE'])
